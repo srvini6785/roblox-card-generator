@@ -1,0 +1,9 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' blob: data: https://*.rbxcdn.com https://thumbnails.roblox.com; connect-src 'self' https://thumbnails.roblox.com; worker-src 'self' blob:
+/app.js
+  Cache-Control: public, max-age=3600
+/styles.css
+  Cache-Control: public, max-age=3600

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#332052" />
+    <meta name="description" content="Crie cards Roblox com chroma verde, revisão dos avatares e realce de imagem em um estúdio simples de usar no celular." />
+    <meta name="color-scheme" content="light" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
+    <title>Vela Studio — Cards Roblox</title>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Vela Studio início">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="brand-copy"><strong>vela</strong><small>ROBLOX CARD STUDIO</small></span>
+        </a>
+        <div class="topbar-actions">
+          <span class="privacy-pill"><span class="privacy-dot"></span> Seus arquivos ficam no aparelho</span>
+          <button class="icon-button" id="installBtn" type="button" hidden aria-label="Instalar app no celular">＋</button>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="sparkle">✦</span> SEU ESTÚDIO DE CARDS ROBLOX</div>
+            <h1>Crie seu card<br /><em>do seu jeito.</em></h1>
+            <p>Organize os pares, confira cada avatar e exporte cards prontos — no celular ou no computador.</p>
+            <div class="hero-tags"><span>01 · Importar</span><span>02 · Conferir</span><span>03 · Criar</span></div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+            <div class="art-card art-back"><span class="art-spark">✦</span></div>
+            <div class="art-card art-front"><span class="art-code">code:</span><span class="art-code-line">F24242</span><div class="art-avatar"><span class="avatar-head"></span><span class="avatar-body"></span></div><span class="art-caption">MATCHING OUTFIT</span></div>
+            <span class="art-star star-one">✦</span><span class="art-star star-two">·</span>
+          </div>
+        </section>
+
+        <nav class="step-nav" aria-label="Etapas">
+          <a href="#importar" class="step-link active"><span>1</span> Arquivos</a>
+          <a href="#conferir" class="step-link"><span>2</span> Conferência</a>
+          <a href="#editar" class="step-link"><span>3</span> Estúdio</a>
+        </nav>
+
+        <section class="studio-grid">
+          <div class="workflow-column">
+            <section class="panel section-panel" id="importar">
+              <div class="section-heading">
+                <span class="step-number">01</span>
+                <div><h2>Prepare seus arquivos</h2><p>Uma imagem com o par de skins para cada linha de códigos.</p></div>
+              </div>
+
+              <div class="upload-grid">
+                <label class="upload-card" for="zipInput">
+                  <input id="zipInput" type="file" accept=".zip,application/zip" />
+                  <span class="upload-icon">↥</span><span class="upload-title">ZIP das skins</span>
+                  <span class="upload-hint" id="zipName">Toque para escolher ou arraste aqui</span>
+                  <span class="upload-meta">ZIP · até 100 MB</span>
+                </label>
+                <label class="upload-card" for="templateInput">
+                  <input id="templateInput" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" />
+                  <span class="upload-icon">▧</span><span class="upload-title">Template do card</span>
+                  <span class="upload-hint" id="templateName">PNG ou JPG com os campos “XXXXX”</span>
+                  <span class="upload-meta">PNG recomendado</span>
+                </label>
+              </div>
+
+              <label class="field-label" for="codesInput">Códigos dos pares <span>feminino primeiro, masculino depois</span></label>
+              <textarea id="codesInput" rows="4" spellcheck="false" placeholder="F24242, M24244&#10;F12345678, M87654321"></textarea>
+              <p class="field-note"><span class="note-mark">i</span> Letras como <b>F</b> e <b>M</b> são preservadas no card. A parte numérica é usada apenas para buscar o avatar no Roblox.</p>
+
+              <button class="button button-primary button-wide" id="prepareBtn" type="button">
+                <span>Preparar pares para conferência</span><span class="button-arrow">→</span>
+              </button>
+              <div class="status-message" id="prepareStatus" role="status" aria-live="polite"></div>
+            </section>
+
+            <section class="panel section-panel" id="conferir">
+              <div class="section-heading">
+                <span class="step-number">02</span>
+                <div><h2>Confira os pares</h2><p>Compare a captura com as miniaturas dos dois usuários.</p></div>
+              </div>
+              <div id="pairEmpty" class="empty-state"><span class="empty-icon">◎</span><strong>Seus pares aparecem aqui</strong><span>Envie o ZIP e os códigos para começar.</span></div>
+              <div id="pairWorkspace" hidden>
+                <div class="pair-toolbar"><button class="mini-button" id="prevPair" type="button" aria-label="Par anterior">‹</button><span id="pairCount">Par 1 de 1</span><button class="mini-button" id="nextPair" type="button" aria-label="Próximo par">›</button></div>
+                <div class="pair-preview-grid">
+                  <div class="preview-tile source-tile"><span class="tile-label">IMAGEM DO ZIP</span><img id="pairSource" alt="Imagem do par de skins" /></div>
+                  <div class="reference-grid">
+                    <div class="preview-tile ref-tile"><span class="tile-label">FEMININO · <b id="femaleCodeLabel"></b></span><img id="femaleRef" alt="Avatar feminino consultado no Roblox" /><span class="ref-status" id="femaleRefStatus"></span></div>
+                    <div class="preview-tile ref-tile"><span class="tile-label">MASCULINO · <b id="maleCodeLabel"></b></span><img id="maleRef" alt="Avatar masculino consultado no Roblox" /><span class="ref-status" id="maleRefStatus"></span></div>
+                  </div>
+                </div>
+                <div class="pair-match" id="pairMatch"></div>
+                <label class="confirm-row"><input id="confirmPair" type="checkbox" /><span class="check-mark"></span><span>Conferi este par: a imagem corresponde aos dois avatares.</span></label>
+                <div class="pair-progress"><div class="progress-track"><span id="reviewProgress"></span></div><span id="reviewCount">0 de 0 confirmados</span></div>
+              </div>
+            </section>
+
+            <details class="panel settings-panel" id="editar" open>
+              <summary>
+                <span class="step-number">03</span>
+                <span class="summary-copy"><strong>Ajustes do estúdio</strong><small>Chroma, posição, texto e qualidade</small></span>
+                <span class="summary-chevron">⌄</span>
+              </summary>
+              <div class="settings-content">
+                <div class="settings-group">
+                  <div class="settings-title"><span class="settings-icon">◉</span><div><strong>Fundo e acabamento</strong><small>Remoção local do chroma verde</small></div></div>
+                  <label class="switch-row"><span><strong>Remover fundo verde</strong><small>Preserva a transparência das skins</small></span><input id="removeBg" type="checkbox" checked /><span class="switch"></span></label>
+                  <div class="control-row color-row"><label for="keyColor">Cor do chroma</label><div class="color-control"><input id="keyColor" type="color" value="#005A00" /><output id="keyColorValue">#005A00</output></div></div>
+                  <div class="control-row"><label for="tolerance">Tolerância da cor <output id="toleranceValue">28°</output></label><input id="tolerance" type="range" min="5" max="60" value="28" /></div>
+                  <div class="control-row"><label for="edgeSoftness">Suavização da borda <output id="edgeValue">14</output></label><input id="edgeSoftness" type="range" min="2" max="35" value="14" /></div>
+                  <div class="control-row"><label for="minSaturation">Saturação mínima <output id="saturationValue">18%</output></label><input id="minSaturation" type="range" min="0" max="70" value="18" /></div>
+                  <div class="control-row"><label for="spill">Redução de halo verde <output id="spillValue">75%</output></label><input id="spill" type="range" min="0" max="100" value="75" /></div>
+                </div>
+
+                <div class="settings-group">
+                  <div class="settings-title"><span class="settings-icon">✥</span><div><strong>Posição das skins</strong><small>Valores de referência em uma arte de 640 × 640</small></div></div>
+                  <label class="switch-row"><span><strong>Adaptar ao tamanho do template</strong><small>Amplia a área em templates maiores</small></span><input id="scaleSkin" type="checkbox" checked /><span class="switch"></span></label>
+                  <div class="input-grid four-inputs">
+                    <label>X<input id="skinX" type="number" min="0" value="70" /></label><label>Y<input id="skinY" type="number" min="0" value="40" /></label>
+                    <label>Largura<input id="skinW" type="number" min="1" value="500" /></label><label>Altura<input id="skinH" type="number" min="1" value="490" /></label>
+                  </div>
+                  <p class="field-note compact-note">O par é recortado pela transparência, centralizado e redimensionado sem esticar.</p>
+                </div>
+
+                <div class="settings-group">
+                  <div class="settings-title"><span class="settings-icon">Aa</span><div><strong>Códigos do card</strong><small>Posições em pixels da imagem original</small></div></div>
+                  <div class="code-position-block"><span class="gender-chip female-chip">F</span><div class="input-grid code-inputs"><label>X<input id="femaleX" type="number" min="0" value="105" /></label><label>Y<input id="femaleY" type="number" min="0" value="397" /></label><label>Área X<input id="femaleAreaW" type="number" min="1" value="80" /></label><label>Área Y<input id="femaleAreaH" type="number" min="1" value="52" /></label></div></div>
+                  <div class="code-position-block"><span class="gender-chip male-chip">M</span><div class="input-grid code-inputs"><label>X<input id="maleX" type="number" min="0" value="1260" /></label><label>Y<input id="maleY" type="number" min="0" value="1110" /></label><label>Área X<input id="maleAreaW" type="number" min="1" value="80" /></label><label>Área Y<input id="maleAreaH" type="number" min="1" value="52" /></label></div></div>
+                  <p class="field-note compact-note">A área que cobre os XXXXX acompanha automaticamente a posição X/Y do código.</p>
+                  <div class="input-grid text-style-grid"><label>Tamanho (base 640)<input id="fontSize" type="number" min="10" max="120" value="36" /></label><label>Fonte<select id="fontStyle"><option value="custom" selected>Realistic Nature</option><option value="serif">Serifada fina</option><option value="sans">Sem serifa</option><option value="bold">Serifada em negrito</option></select></label></div>
+                  <label class="font-upload" for="fontInput"><input id="fontInput" type="file" accept=".otf,.ttf,.woff,.woff2,font/otf,font/ttf,font/woff,font/woff2" /><span class="font-upload-icon">↑</span><span><strong>Carregar Realistic Nature</strong><small>Selecione o arquivo de fonte no aparelho</small></span></label>
+                  <p class="font-status" id="fontStatus">Nenhum arquivo carregado. Selecione a fonte para aplicá-la aos códigos.</p>
+                  <p class="font-license-note">O arquivo fica no seu aparelho e não é enviado ao site. Para hospedar a fonte para todos os visitantes, é necessária licença Webfont. <a href="https://www.timelesstype.co/fonts/realistic-nature-bold-serif-font" target="_blank" rel="noopener noreferrer">Ver fonte e licenças ↗</a></p>
+                  <label class="switch-row"><span><strong>Ajustar código para caber</strong><small>Reduz só quando excede a área disponível</small></span><input id="fitText" type="checkbox" checked /><span class="switch"></span></label>
+                  <label class="switch-row"><span><strong>Apagar XXXXX antes de escrever</strong><small>Cor de cobertura</small></span><input id="clearCodes" type="checkbox" checked /><span class="switch"></span></label>
+                  <div class="input-grid color-settings"><label>Texto<input id="textColor" type="color" value="#111111" /></label><label>Fundo da área<input id="coverColor" type="color" value="#FFFFFF" /></label></div>
+                </div>
+
+                <div class="settings-group quality-group">
+                  <div class="settings-title"><span class="settings-icon">✧</span><div><strong>Realce inteligente</strong><small>Suavização de alta qualidade e nitidez leve</small></div></div>
+                  <label class="switch-row"><span><strong>Melhorar imagem automaticamente</strong><small>Reduz serrilhado ao ampliar e realça detalhes</small></span><input id="enhance" type="checkbox" checked /><span class="switch"></span></label>
+                  <div class="control-row"><label for="sharpness">Intensidade da nitidez <output id="sharpnessValue">18%</output></label><input id="sharpness" type="range" min="0" max="50" value="18" /></div>
+                  <p class="quality-note">O realce roda no aparelho e não envia imagens para um servidor. Ele melhora a interpolação, mas não consegue recuperar detalhes que não existem no original.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <aside class="preview-column">
+            <section class="panel editor-panel">
+              <div class="editor-heading"><div><span class="live-pill"><span></span> PRÉVIA</span><h2>Seu card</h2></div><button class="icon-button subtle-icon" id="resetView" type="button" title="Ajustar visualização">↻</button></div>
+              <div class="canvas-frame" id="canvasFrame"><div class="canvas-placeholder" id="canvasPlaceholder"><span class="placeholder-glyph">✧</span><strong>Seu design aparece aqui</strong><span>Envie um template e prepare o primeiro par.</span></div><img id="cardPreview" alt="Prévia do card final" hidden /></div>
+              <div class="preview-meta"><span id="templateDimensions">Aguardando template</span><span class="quality-badge" id="qualityBadge">PNG · Alta qualidade</span></div>
+              <div class="position-warning" id="positionWarning" hidden></div>
+              <div class="progress-wrap" id="generationProgressWrap" hidden><div class="progress-track"><span id="generationProgress"></span></div><span id="generationStatus">Preparando…</span></div>
+              <button class="button button-primary button-wide generate-button" id="generateBtn" type="button" disabled><span>Gerar cards</span><span class="button-arrow">✦</span></button>
+              <a class="button button-secondary button-wide download-button" id="downloadBtn" hidden download="vela-cards.zip"><span>Baixar ZIP</span><span class="button-arrow">↓</span></a>
+              <p class="local-note"><span>⌑</span> O processamento das imagens acontece no seu aparelho.</p>
+              <div class="status-message" id="generationMessage" role="status" aria-live="polite"></div>
+            </section>
+            <div class="tip-card"><span class="tip-icon">✦</span><div><strong>Dica de qualidade</strong><p>Use capturas originais de alta resolução. A ampliação suave evita serrilhado sem borrar o contorno.</p></div></div>
+          </aside>
+        </section>
+
+        <footer class="footer"><span>VELA STUDIO</span><span>Feito para criar com calma ✦</span><a href="#top">Voltar ao topo ↑</a></footer>
+      </main>
+    </div>
+    <div class="mobile-dock" id="mobileDock"><span id="dockHint">Adicione os arquivos para começar</span><button class="button button-primary" id="dockGenerate" type="button" disabled>Gerar cards <span>✦</span></button></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>

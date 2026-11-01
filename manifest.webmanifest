@@ -1,0 +1,14 @@
+{
+  "name": "Vela Studio — Roblox Cards",
+  "short_name": "Vela Studio",
+  "description": "Monte e revise cards Roblox no seu celular.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5fb",
+  "theme_color": "#332052",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
