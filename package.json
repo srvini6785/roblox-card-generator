@@ -4,6 +4,7 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
+    "build:pages": "node -e \"console.log('Static Pages site: no compilation needed')\"",
     "dev": "npx wrangler pages dev .",
     "deploy": "npx wrangler pages deploy . --project-name vela-roblox-card-studio"
   }

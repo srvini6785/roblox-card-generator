@@ -44,7 +44,7 @@ O site não precisa de compilação nem de dependências de frontend. Para inclu
 
 O endereço será `https://vela-roblox-card-studio.pages.dev`, se esse nome estiver disponível. O primeiro comando pode pedir para escolher a branch de produção. Para rodar uma prévia local, use `npx wrangler pages dev .`.
 
-Também é possível conectar esta pasta a um repositório Git no Cloudflare Pages. Configure a raiz do projeto como `cloudflare_site`; não há comando de build e a saída é a própria pasta (`.`). A pasta `functions` precisa ficar na raiz do projeto.
+Também é possível conectar esta pasta a um repositório Git no Cloudflare Pages. Configure **Root directory** como `cloudflare_site` (ou a pasta que contém `index.html` e `functions`), **Build command** como `npm run build:pages` e **Build output directory** como `.`. O script é intencionalmente sem compilação: ele permite que o Pages publique os arquivos estáticos e carregue a pasta `functions` na raiz do projeto.
 
 Você também pode abrir `index.html` diretamente no navegador para conferir o layout e usar o processamento local. Ao abrir como arquivo (`file://`), alguns navegadores bloqueiam a consulta direta das miniaturas do Roblox; para verificação automática completa, rode com Wrangler ou publique no Pages.
 
