@@ -106,25 +106,76 @@
   }
 
   function numericId(code) {
-    const found = String(code).match(/\d+/g) || [];
-    if (found.length !== 1 || !/^[0-9]{1,20}$/.test(found[0]) || /^0+$/.test(found[0])) return null;
-    return found[0];
+    const value = String(code).trim();
+    const match = value.match(/^\D*([0-9]{1,20})$/);
+    if (!match || /^0+$/.test(match[1])) return null;
+    return match[1];
   }
 
   function parseCodePairs(text) {
+    const lines = text.split(/\r?\n/).map((raw, index) => ({ line: raw.trim(), lineNumber: index + 1 })).filter((item) => item.line);
+    if (!lines.length) throw new Error("Cole os códigos dos pares para começar.");
+
+    const headerPattern = /^(\d{1,3})\s*[-–—:.)]\s*$/;
+    const rolePattern = /^(\S+)\s*\(\s*([MF])\s*\)$/i;
+    const numberedMode = lines.some(({ line }) => headerPattern.test(line));
+
+    if (numberedMode) {
+      const groups = [];
+      const seenNumbers = new Set();
+      let current = null;
+
+      for (const { line, lineNumber } of lines) {
+        const header = line.match(headerPattern);
+        if (header) {
+          const imageNumber = Number(header[1]);
+          if (!imageNumber) throw new Error("Linha " + lineNumber + ": a numeração das imagens começa em 01.");
+          if (seenNumbers.has(imageNumber)) throw new Error("Linha " + lineNumber + ": a imagem " + String(imageNumber).padStart(2, "0") + " está numerada mais de uma vez.");
+          seenNumbers.add(imageNumber);
+          current = { imageNumber, femaleCode: null, maleCode: null };
+          groups.push(current);
+          continue;
+        }
+
+        if (!current) throw new Error("Linha " + lineNumber + ": coloque um cabeçalho como “01-” antes dos códigos.");
+        const tagged = line.match(rolePattern);
+        if (!tagged) throw new Error("Linha " + lineNumber + ": use um código por linha e identifique-o como “(M)” ou “(F)”, por exemplo F24244 (M).");
+        const code = tagged[1];
+        const role = tagged[2].toUpperCase();
+        const field = role === "M" ? "maleCode" : "femaleCode";
+        if (current[field]) throw new Error("Imagem " + String(current.imageNumber).padStart(2, "0") + ": informe apenas um código (" + role + ").");
+        current[field] = code;
+      }
+
+      for (const pair of groups) {
+        if (!pair.maleCode || !pair.femaleCode) {
+          const missing = [!pair.maleCode && "M", !pair.femaleCode && "F"].filter(Boolean).join(" e ");
+          throw new Error("Imagem " + String(pair.imageNumber).padStart(2, "0") + ": falta o código " + missing + ".");
+        }
+        pair.maleId = numericId(pair.maleCode);
+        pair.femaleId = numericId(pair.femaleCode);
+      }
+
+      groups.sort((a, b) => a.imageNumber - b.imageNumber);
+      for (let index = 0; index < groups.length; index++) {
+        const expected = index + 1;
+        if (groups[index].imageNumber !== expected) {
+          throw new Error("A numeração precisa ser contínua de 01 a " + String(groups.length).padStart(2, "0") + ". Está faltando a imagem " + String(expected).padStart(2, "0") + ".");
+        }
+      }
+      return { pairs: groups, numbered: true };
+    }
+
     const pairs = [];
-    for (const [index, rawLine] of text.split(/\r?\n/).entries()) {
-      const line = rawLine.trim();
-      if (!line) continue;
+    for (const { line, lineNumber } of lines) {
       const codes = line.split(/[\s,;]+/).filter(Boolean);
-      if (codes.length !== 2) throw new Error(`Linha ${index + 1}: informe dois códigos, feminino primeiro e masculino depois.`);
+      if (codes.length !== 2) throw new Error("Linha " + lineNumber + ": informe dois códigos na mesma linha (feminino primeiro, masculino depois), ou use o formato numerado com (M)/(F).");
       const femaleId = numericId(codes[0]);
       const maleId = numericId(codes[1]);
-      if (!femaleId || !maleId) throw new Error(`Linha ${index + 1}: cada código precisa conter exatamente um ID numérico para a conferência Roblox. As letras e símbolos do código serão mantidos no card.`);
+      if (!femaleId || !maleId) throw new Error("Linha " + lineNumber + ": cada código precisa conter exatamente um ID numérico para a conferência Roblox. As letras e símbolos do código serão mantidos no card.");
       pairs.push({ femaleCode: codes[0], maleCode: codes[1], femaleId, maleId });
     }
-    if (!pairs.length) throw new Error("Cole ao menos uma linha com o código feminino e o masculino.");
-    return pairs;
+    return { pairs, numbered: false };
   }
 
   function naturalCompare(a, b) {
@@ -144,7 +195,7 @@
     }
   }
 
-  async function readImageEntries(zipFile) {
+  async function readImageEntries(zipFile, preserveArchiveOrder = false) {
     if (zipFile.size > MAX_ZIP_BYTES) throw new Error("O ZIP passou de 100 MB. Divida o lote em arquivos menores.");
     const bytes = new Uint8Array(await zipFile.arrayBuffer());
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -195,7 +246,7 @@
       if (images.length > MAX_IMAGES) throw new Error(`O lote passou de ${MAX_IMAGES} imagens. Divida em arquivos menores para funcionar melhor no celular.`);
     }
     if (!images.length) throw new Error("Não encontrei imagens no ZIP. Use PNG, JPG ou WebP.");
-    return images.sort((a, b) => naturalCompare(a.name, b.name));
+    return preserveArchiveOrder ? images : images.sort((a, b) => naturalCompare(a.name, b.name));
   }
 
   function mimeForExt(ext) {
@@ -204,8 +255,19 @@
 
   function idsInName(name) { return new Set(name.match(/\d+/g) || []); }
 
-  function makePairings(members, rawPairs) {
-    if (members.length !== rawPairs.length) throw new Error(`O ZIP contém ${members.length} imagem(ns), mas há ${rawPairs.length} linhas de códigos. Deve haver uma imagem por par.`);
+  function makePairings(members, parsedCodes) {
+    const rawPairs = parsedCodes.pairs;
+    if (members.length !== rawPairs.length) throw new Error(`O ZIP contém ${members.length} imagem(ns), mas há ${rawPairs.length} pares de códigos. Deve haver uma imagem por par.`);
+    if (parsedCodes.numbered) {
+      return rawPairs.map((pair) => {
+        const imageIndex = pair.imageNumber - 1;
+        const member = members[imageIndex];
+        if (!member) throw new Error("Não encontrei a imagem " + String(pair.imageNumber).padStart(2, "0") + " na ordem do ZIP.");
+        const nameIds = idsInName(member.name);
+        const matchedByFilename = nameIds.has(pair.femaleId) && nameIds.has(pair.maleId);
+        return { ...pair, imageIndex, member, matchedByFilename, numbered: true, confirmed: false, refs: {} };
+      });
+    }
     const assignments = new Map();
     const reserved = new Set();
     rawPairs.forEach((pair, pairIndex) => {
@@ -224,12 +286,12 @@
       const member = members[imageIndex];
       const nameIds = idsInName(member.name);
       const matchedByFilename = nameIds.has(pair.femaleId) && nameIds.has(pair.maleId);
-      return { ...pair, imageIndex, member, matchedByFilename, confirmed: false, refs: {} };
+      return { ...pair, imageIndex, member, matchedByFilename, numbered: false, confirmed: false, refs: {} };
     });
   }
 
   async function fetchReferences(pairs) {
-    const ids = [...new Set(pairs.flatMap((pair) => [pair.femaleId, pair.maleId]))];
+    const ids = [...new Set(pairs.flatMap((pair) => [pair.femaleId, pair.maleId]).filter(Boolean))];
     const found = new Map();
     for (let start = 0; start < ids.length; start += 100) {
       const batch = ids.slice(start, start + 100);
@@ -297,22 +359,30 @@
     const pair = state.pairs[state.selected];
     $("pairWorkspace").hidden = false;
     $("pairEmpty").hidden = true;
-    $("pairCount").textContent = `Par ${state.selected + 1} de ${state.pairs.length}`;
+    $("pairCount").textContent = pair.numbered
+      ? "Par " + String(pair.imageNumber).padStart(2, "0") + " · imagem " + String(pair.imageNumber).padStart(2, "0") + " de " + state.pairs.length
+      : "Par " + (state.selected + 1) + " de " + state.pairs.length;
     $("pairSource").src = pair.sourceUrl;
     $("femaleCodeLabel").textContent = pair.femaleCode;
     $("maleCodeLabel").textContent = pair.maleCode;
-    const fRef = pair.refs[pair.femaleId] || {};
-    const mRef = pair.refs[pair.maleId] || {};
+    const fRef = pair.femaleId
+      ? pair.refs[pair.femaleId] || { status: "Miniatura Roblox indisponível." }
+      : { status: "Código alfanumérico: confira pela imagem e pela ordem do ZIP." };
+    const mRef = pair.maleId
+      ? pair.refs[pair.maleId] || { status: "Miniatura Roblox indisponível." }
+      : { status: "Código alfanumérico: confira pela imagem e pela ordem do ZIP." };
     $("femaleRef").hidden = !fRef.url;
     $("maleRef").hidden = !mRef.url;
     $("femaleRef").src = fRef.url || "";
     $("maleRef").src = mRef.url || "";
     $("femaleRefStatus").textContent = fRef.status || "";
     $("maleRefStatus").textContent = mRef.status || "";
-    $("pairMatch").textContent = pair.matchedByFilename
-      ? "✓ Os dois IDs aparecem no nome deste arquivo."
-      : `Arquivo associado pela ordem do ZIP: ${pair.member.name}`;
-    $("pairMatch").className = `pair-match ${pair.matchedByFilename ? "match-good" : "match-warn"}`;
+    $("pairMatch").textContent = pair.numbered
+      ? "Imagem " + String(pair.imageNumber).padStart(2, "0") + " na ordem do ZIP: " + pair.member.name + ". Os códigos foram associados pelo número informado."
+      : pair.matchedByFilename
+        ? "✓ Os dois IDs aparecem no nome deste arquivo: " + pair.member.name + "."
+        : "Arquivo associado pela ordem natural do nome: " + pair.member.name;
+    $("pairMatch").className = "pair-match " + (!pair.numbered && pair.matchedByFilename ? "match-good" : "match-warn");
     $("confirmPair").checked = pair.confirmed;
     const count = state.pairs.filter((item) => item.confirmed).length;
     $("reviewProgress").style.width = `${(count / state.pairs.length) * 100}%`;
@@ -327,15 +397,15 @@
     try {
       if (!state.zipFile) throw new Error("Escolha primeiro o ZIP das skins.");
       if (!state.templateFile) throw new Error("Escolha também o template do card.");
-      const rawPairs = parseCodePairs($("codesInput").value);
+      const parsedCodes = parseCodePairs($("codesInput").value);
       if (state.zipFile.size > MAX_ZIP_BYTES) throw new Error("O ZIP passou de 100 MB. Divida o lote em partes menores.");
       state.busy = true;
       lockControls(true);
       $("prepareBtn").disabled = true;
-      $("prepareBtn").querySelector("span").textContent = "Lendo ZIP e verificando IDs…";
+      $("prepareBtn").querySelector("span").textContent = "Lendo ZIP e organizando códigos…";
       setStatus(status, "Abrindo o ZIP localmente…", "info");
-      const members = await readImageEntries(state.zipFile);
-      const pairs = makePairings(members, rawPairs);
+      const members = await readImageEntries(state.zipFile, parsedCodes.numbered);
+      const pairs = makePairings(members, parsedCodes);
       freeOwnedUrls();
       pairs.forEach((pair) => {
         pair.sourceUrl = URL.createObjectURL(pair.member.blob);
@@ -344,11 +414,11 @@
       state.members = members;
       state.pairs = pairs;
       state.selected = 0;
-      setStatus(status, `Encontrei ${pairs.length} par(es). Consultando as miniaturas Roblox…`, "info");
+      setStatus(status, `Encontrei ${pairs.length} par(es). Consultando miniaturas quando há um ID numérico…`, "info");
       const references = await fetchReferences(pairs);
       pairs.forEach((pair) => {
-        pair.refs[pair.femaleId] = references.get(pair.femaleId) || { status: "Miniatura indisponível." };
-        pair.refs[pair.maleId] = references.get(pair.maleId) || { status: "Miniatura indisponível." };
+        if (pair.femaleId) pair.refs[pair.femaleId] = references.get(pair.femaleId) || { status: "Miniatura indisponível." };
+        if (pair.maleId) pair.refs[pair.maleId] = references.get(pair.maleId) || { status: "Miniatura indisponível." };
       });
       renderPair();
       setStatus(status, `Pronto: ${pairs.length} par(es). Revise cada imagem e marque a confirmação.`, "success");
@@ -668,9 +738,10 @@
         const blob = await canvasBlob(canvas);
         outputBytes += blob.size;
         if (outputBytes > 400 * 1024 * 1024) throw new Error("O lote gerado passou de 400 MB. Separe os pares em ZIPs menores para não sobrecarregar o celular.");
-        const name = `card_${String(i + 1).padStart(4, "0")}_F${pair.femaleId}_M${pair.maleId}.png`;
+        const safeCode = (code) => String(code).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 40) || "codigo";
+        const name = `card_${String(i + 1).padStart(4, "0")}_${safeCode(pair.femaleCode)}_${safeCode(pair.maleCode)}.png`;
         entries.push({ name, data: new Uint8Array(await blob.arrayBuffer()) });
-        csvRows.push([name, pair.femaleCode, pair.maleCode, pair.femaleId, pair.maleId, pair.matchedByFilename ? "nome_confirmado" : "ordem_confirmada"]);
+        csvRows.push([name, pair.femaleCode, pair.maleCode, pair.femaleId || "", pair.maleId || "", pair.matchedByFilename ? "nome_confirmado" : "ordem_confirmada"]);
         if (i === state.selected) showCanvas(canvas);
       }
       const csv = `\uFEFF${csvRows.map((row) => row.map(csvCell).join(",")).join("\r\n")}`;

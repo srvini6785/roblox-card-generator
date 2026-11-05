@@ -13,7 +13,8 @@ A interface foi reorganizada com foco na prévia do card, controles agrupados e 
 - Texto feminino: X=105, Y=397; área 80 × 52 na escala 640.
 - Texto masculino: X=1260, Y=1110; área 80 × 52 na escala 640.
 - A área que cobre o placeholder segue automaticamente a posição do texto.
-- Os códigos completos são impressos como digitados. Por exemplo, `F24242` mantém o `F`; o número dentro é usado só para consultar o avatar.
+- Os códigos completos são impressos como digitados. Por exemplo, `F24242` mantém o `F`. Quando o código termina em um ID numérico (com ou sem prefixo de letras), o site também pode consultar esse ID no Roblox; códigos alfanuméricos como `F0FD59` são conferidos pela imagem e pela ordem do ZIP.
+- O formato numerado `01-`, `F24244 (M)`, `F24242 (F)` associa cada par diretamente à imagem de mesmo número na ordem em que aparece dentro do ZIP. (M) e (F) são apenas marcadores de organização; no card aparece só o código completo. Numeração duplicada, código M/F faltando, imagens a mais/menos e números fora de sequência são apontados antes da conferência.
 - Os códigos passam a usar **Realistic Nature** quando você carrega o arquivo OTF/TTF/WOFF/WOFF2 na seção de fonte. O arquivo é lido localmente no aparelho, não é enviado nem incluído no site; até carregar, o navegador usa uma serifada de fallback.
 - Realce local com suavização de alta qualidade, contraste leve e nitidez configurável. Isso reduz serrilhado ao ampliar, sem enviar imagens para um serviço de IA ou inventar detalhes ausentes da imagem original.
 
@@ -50,7 +51,7 @@ Você também pode abrir `index.html` diretamente no navegador para conferir o l
 
 ## Uso
 
-1. Envie um ZIP com uma imagem por par, cole dois códigos por linha (feminino, depois masculino) e envie o template.
+1. Envie um ZIP com uma imagem por par, cole os códigos no formato numerado com (M) e (F) (ou use duas colunas por linha no formato antigo) e envie o template. No formato numerado, a primeira imagem listada no ZIP é `01`, a próxima é `02`, e assim por diante.
 2. Confira cada par usando a imagem e as duas miniaturas consultadas no Roblox. Confirme todos para liberar a geração.
 3. Ajuste o chroma, posições e realce na seção **Ajustes do estúdio**. A prévia acompanha as mudanças.
 4. Gere e baixe o ZIP com os PNGs em resolução original e o `conferencia.csv`.

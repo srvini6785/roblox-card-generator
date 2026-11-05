@@ -1,6 +1,6 @@
-const CACHE = "vela-studio-shell-v3";
+const CACHE = "vela-studio-shell-v4";
 const ROOT = self.registration.scope;
-const SHELL = [ROOT, "index.html", "styles.css?v=3", "app.js", "manifest.webmanifest", "icon.svg"].map((path) => new URL(path, ROOT).href);
+const SHELL = [ROOT, "index.html", "styles.css?v=3", "app.js?v=4", "manifest.webmanifest", "icon.svg"].map((path) => new URL(path, ROOT).href);
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });

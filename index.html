@@ -51,7 +51,7 @@
             <section class="panel section-panel" id="importar">
               <div class="section-heading">
                 <span class="step-number">01</span>
-                <div><h2>Prepare seus arquivos</h2><p>Uma imagem com o par de skins para cada linha de códigos.</p></div>
+                <div><h2>Prepare seus arquivos</h2><p>Cada número identifica uma imagem do ZIP e o par de códigos dela.</p></div>
               </div>
 
               <div class="upload-grid">
@@ -69,9 +69,9 @@
                 </label>
               </div>
 
-              <label class="field-label" for="codesInput">Códigos dos pares <span>feminino primeiro, masculino depois</span></label>
-              <textarea id="codesInput" rows="4" spellcheck="false" placeholder="F24242, M24244&#10;F12345678, M87654321"></textarea>
-              <p class="field-note"><span class="note-mark">i</span> Letras como <b>F</b> e <b>M</b> são preservadas no card. A parte numérica é usada apenas para buscar o avatar no Roblox.</p>
+              <label class="field-label" for="codesInput">Códigos dos pares <span>número da imagem + marcação (M)/(F)</span></label>
+              <textarea id="codesInput" rows="12" spellcheck="false" placeholder="01-&#10;F24244 (M)&#10;F24242 (F)&#10;&#10;02-&#10;F2423D (M)&#10;F24238 (F)"></textarea>
+              <p class="field-note"><span class="note-mark">i</span> No formato numerado, cada número aponta para a imagem na ordem em que ela aparece dentro do ZIP. (M) e (F) só organizam o par; no card sai apenas o código completo, inclusive o F. O formato antigo com dois códigos por linha também continua aceito.</p>
 
               <button class="button button-primary button-wide" id="prepareBtn" type="button">
                 <span>Preparar pares para conferência</span><span class="button-arrow">→</span>
@@ -172,6 +172,6 @@
     </div>
     <div class="mobile-dock" id="mobileDock"><span id="dockHint">Adicione os arquivos para começar</span><button class="button button-primary" id="dockGenerate" type="button" disabled>Gerar cards <span>✦</span></button></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js" defer></script>
+    <script src="./app.js?v=4" defer></script>
   </body>
 </html>
