@@ -133,9 +133,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 21px; }
 .upload-card { min-width: 0; min-height: 148px; padding: 15px; border: 1.5px dashed #d8cdeb; border-radius: 17px; background: linear-gradient(145deg,#fdfcff,#faf8ff); display: flex; flex-direction: column; align-items: flex-start; position: relative; cursor: pointer; transition: border-color .18s, background .18s, transform .18s, box-shadow .18s; }
 .upload-card:hover, .upload-card.drag-over { border-color: #9374ef; background: #f5f0ff; box-shadow: 0 7px 20px rgba(112,76,232,.08); transform: translateY(-2px); }
+.upload-card.is-loaded { border-style: solid; border-color: #7bbd9b; background: linear-gradient(145deg,#f5fcf8,#f8fcf9); }
+.upload-card.is-loaded .upload-icon { border-color: #d4efdf; background: #e9f7ef; color: #21864f; }
+.upload-card.has-error { border-color: #e89b9b; background: #fff8f8; }
 .upload-card input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .upload-icon { width: 31px; height: 31px; margin-bottom: 10px; border: 1px solid #e5dcfa; border-radius: 10px; background: #f1ebff; color: #704ce8; display: grid; place-items: center; font-size: 18px; }
 .upload-title { color: #34264d; font-size: 12px; font-weight: 700; }
+.upload-state { margin-top: 7px; padding: 4px 8px; border-radius: 999px; background: #e6f6ec; color: #247b49; font-size: 10px; font-weight: 750; line-height: 1.2; }
+.upload-card.has-error .upload-state { background: #fde9e9; color: #a43232; }
 .upload-hint { max-width: 100%; margin-top: 5px; overflow: hidden; color: #7e758b; font-size: 10px; line-height: 1.45; text-overflow: ellipsis; }
 .upload-meta { margin-top: auto; padding-top: 8px; color: #a198ac; font-size: 9px; }
 .field-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 8px; color: #392e48; font-size: 12px; font-weight: 700; }
@@ -156,9 +161,10 @@ textarea::placeholder { color: #aaa2b2; }
 .button-arrow { font-size: 16px; }
 .status-message { min-height: 0; margin-top: 10px; color: #716a7b; font-size: 11px; line-height: 1.5; }
 .status-message:empty { display: none; }
-.status-message.error { color: var(--danger); }
-.status-message.success { color: var(--success); }
-.status-message.info { color: #6655a1; }
+.status-message.error, .status-message.success, .status-message.info { padding: 9px 11px; border-radius: 11px; }
+.status-message.error { color: var(--danger); background: #fff0f0; }
+.status-message.success { color: var(--success); background: #edf9f1; }
+.status-message.info { color: #6655a1; background: #f3efff; }
 
 .empty-state { min-height: 145px; border: 1px dashed #e1dbe9; border-radius: 16px; background: linear-gradient(145deg,#fcfbff,#f9f7fc); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: #928b9a; text-align: center; }
 .empty-icon { color: #9575ed; font-size: 28px; }

@@ -84,7 +84,19 @@
 
   function setStatus(element, message, kind = "info") {
     element.textContent = message;
-    element.className = `status-message ${message ? kind : ""}`;
+    element.className = "status-message " + (message ? kind : "");
+  }
+
+  function updateUploadCard(inputId, nameId, statusId, file, emptyText) {
+    const card = $(inputId).closest(".upload-card");
+    const status = $(statusId);
+    card.classList.toggle("is-loaded", Boolean(file));
+    card.classList.remove("has-error");
+    $(nameId).textContent = file
+      ? String(file.name) + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB"
+      : emptyText;
+    status.textContent = file ? "✓ Arquivo selecionado" : "";
+    status.hidden = !file;
   }
 
   let toastTimer;
@@ -293,6 +305,17 @@
   async function fetchReferences(pairs) {
     const ids = [...new Set(pairs.flatMap((pair) => [pair.femaleId, pair.maleId]).filter(Boolean))];
     const found = new Map();
+    const fetchJson = async (url) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error("Consulta indisponível");
+        return await response.json();
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
     for (let start = 0; start < ids.length; start += 100) {
       const batch = ids.slice(start, start + 100);
       const query = new URLSearchParams({ userIds: batch.join(","), size: "420x420", format: "Png", isCircular: "false" });
@@ -300,14 +323,10 @@
       try {
         const proxyUrl = new URL("./api/roblox-avatar", location.href);
         proxyUrl.search = query.toString();
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("proxy");
-        payload = await response.json();
+        payload = await fetchJson(proxyUrl);
       } catch {
         try {
-          const response = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?${query}`);
-          if (!response.ok) throw new Error("Roblox indisponível");
-          payload = await response.json();
+          payload = await fetchJson("https://thumbnails.roblox.com/v1/users/avatar?" + query);
         } catch {
           batch.forEach((id) => found.set(id, { status: "Consulta indisponível. Confira visualmente pela imagem e pela ordem do ZIP." }));
           continue;
@@ -405,6 +424,7 @@
       $("prepareBtn").querySelector("span").textContent = "Lendo ZIP e organizando códigos…";
       setStatus(status, "Abrindo o ZIP localmente…", "info");
       const members = await readImageEntries(state.zipFile, parsedCodes.numbered);
+      setStatus(status, members.length + " imagem(ns) encontrada(s). Conferindo quantidade e ordem…", "info");
       const pairs = makePairings(members, parsedCodes);
       freeOwnedUrls();
       pairs.forEach((pair) => {
@@ -789,14 +809,26 @@
     clearDownload();
     if (state.templateUrl) URL.revokeObjectURL(state.templateUrl);
     state.templateUrl = file ? URL.createObjectURL(file) : null;
-    $("templateName").textContent = file ? `${file.name} · ${Math.round(file.size / 1024)} KB` : "PNG ou JPG com os campos “XXXXX”";
+    updateUploadCard("templateInput", "templateName", "templateStatus", file, "PNG ou JPG com os campos “XXXXX”");
     if (file) {
       loadBitmap(file).then((bitmap) => {
         $("templateDimensions").textContent = `${bitmap.width} × ${bitmap.height} px`;
         updatePositionWarning(bitmap.width, bitmap.height);
         if (state.pairs.length) schedulePreview();
         bitmap.close?.();
-      }).catch(() => setStatus($("prepareStatus"), "Não consegui abrir o template. Escolha um PNG ou JPG válido.", "error"));
+      }).catch(() => {
+        state.templateFile = null;
+        if (state.templateUrl) URL.revokeObjectURL(state.templateUrl);
+        state.templateUrl = null;
+        $("templateInput").value = "";
+        updateUploadCard("templateInput", "templateName", "templateStatus", null, "PNG ou JPG com os campos “XXXXX”");
+        const card = $("templateInput").closest(".upload-card");
+        card.classList.add("has-error");
+        $("templateStatus").textContent = "⚠ Não foi possível abrir";
+        $("templateStatus").hidden = false;
+        setStatus($("prepareStatus"), "O template não abriu. Escolha um PNG ou JPG válido e confira se o arquivo terminou de baixar.", "error");
+        updateReadyState();
+      });
     } else {
       $("templateDimensions").textContent = "Aguardando template";
       $("positionWarning").hidden = true;
@@ -808,7 +840,7 @@
 
   function showCanvasWhenReady() {
     const file = state.zipFile;
-    $("zipName").textContent = file ? `${file.name} · ${Math.round(file.size / 1024)} KB` : "Toque para escolher ou arraste aqui";
+    updateUploadCard("zipInput", "zipName", "zipStatus", file, "Toque para escolher ou arraste aqui");
     updateReadyState();
   }
 

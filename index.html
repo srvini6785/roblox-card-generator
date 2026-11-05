@@ -8,7 +8,7 @@
     <meta name="color-scheme" content="light" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="./icon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
     <title>Vela Studio — Cards Roblox</title>
   </head>
   <body>
@@ -58,12 +58,14 @@
                 <label class="upload-card" for="zipInput">
                   <input id="zipInput" type="file" accept=".zip,application/zip" />
                   <span class="upload-icon">↥</span><span class="upload-title">ZIP das skins</span>
+                  <span class="upload-state" id="zipStatus" hidden>✓ Arquivo selecionado</span>
                   <span class="upload-hint" id="zipName">Toque para escolher ou arraste aqui</span>
                   <span class="upload-meta">ZIP · até 100 MB</span>
                 </label>
                 <label class="upload-card" for="templateInput">
                   <input id="templateInput" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" />
                   <span class="upload-icon">▧</span><span class="upload-title">Template do card</span>
+                  <span class="upload-state" id="templateStatus" hidden>✓ Arquivo selecionado</span>
                   <span class="upload-hint" id="templateName">PNG ou JPG com os campos “XXXXX”</span>
                   <span class="upload-meta">PNG recomendado</span>
                 </label>
@@ -172,6 +174,6 @@
     </div>
     <div class="mobile-dock" id="mobileDock"><span id="dockHint">Adicione os arquivos para começar</span><button class="button button-primary" id="dockGenerate" type="button" disabled>Gerar cards <span>✦</span></button></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=4" defer></script>
+    <script src="./app.js?v=5" defer></script>
   </body>
 </html>
